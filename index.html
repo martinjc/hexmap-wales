@@ -74,10 +74,12 @@
         }
         
         let active_hexes = d3.select(null);
+        let selected_hex = undefined;
 
         function reset(event, d) {
             active_hexes.attr('fill', '#eee');
             active_hexes = d3.select(null);
+            selected_hex = undefined;
 
             d3.select('#info')
                 .classed('active', false);
@@ -85,20 +87,20 @@
 
         function clicked(event, d) {
             console.log(active_hexes);
-            // if(active_hexes.any((a) => a.node() === this)) {
-            //     reset(event, d);
-            // } else {
+            console.log(selected_hex);
+            console.log(d.nawc18cd);
+            if(d.nawc18cd === selected_hex) {
+                reset(event, d);
+            } else {
                 console.log(d.nawc18cd)
                 active_hexes.attr('fill', '#eee');
                 active_hexes = d3.selectAll(`.${d.nawc18cd}`);
+                selected_hex = d.nawc18cd;
                 active_hexes.attr('fill', 'red')
                 d3.select("#info")
                         .classed("active", true);
-                if(d.nawc18nm) {
-                    d3.select('#con_name').text(d.nawc18nm);   
-                } else if(d.nawer18nm) {
-                    d3.select('#con_name').text(d.nawer18nm);
-                }
+                d3.select('#con_name').text(d.nawc18nm);   
+            }
         }
 
         let maps = ['maps/nawc_2018_1.hexjson','maps/nawc_2018_2.hexjson','maps/nawc_2018_3.hexjson'];
