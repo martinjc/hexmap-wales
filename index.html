@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="//d3js.org/d3.v6.min.js"></script>
+    <script src="//unpkg.com/d3-hexjson"></script>
+    <title>Wales Hexmaps</title>
+    <style>
+        html,
+        body {
+            margin: 0px;
+            padding: 0px;
+
+            height: 100%;
+            width: 100%;
+
+            background-color: #eeeeee;
+
+            position: relative;
+
+            font-family: "Open Sans", sans-serif;
+        }
+        #map-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .map {
+            flex: 1 1;
+        }
+        #info {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0;
+            opacity: 0.6;
+            visibility: hidden;
+            padding: 30px;
+            background-color: #bbb;
+            border-radius: 4px;
+        }
+        #info.active {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 10;
+            visibility: visible;
+        }
+        @media (min-width: 800px) {
+            #map-container {
+                flex-direction: row;
+            }
+            
+        }
+    </style>
+</head>
+<body>
+    <div id="info"><h1>This is <span id="con_name"></span></h1></div>
+    <div id="map-container">
+        <div id='map1' class="map"><h1>1</h1></div>
+        <div id='map2' class="map"><h1>2</h1></div>
+        <div id='map3' class="map"><h1>3</h1></div>
+    </div>
+
+    <script>
+        let width = d3.select('#map1').node().clientWidth;
+        let height = 400;
+
+        let margin = {
+            top: 30,
+            bottom: 30,
+            left: 30,
+            right: 30
+        }
+        
+        let active_hexes = d3.select(null);
+
+        function reset(event, d) {
+            active_hexes.attr('fill', '#eee');
+            active_hexes = d3.select(null);
+
+            d3.select('#info')
+                .classed('active', false);
+        }
+
+        function clicked(event, d) {
+            console.log(active_hexes);
+            // if(active_hexes.any((a) => a.node() === this)) {
+            //     reset(event, d);
+            // } else {
+                console.log(d.nawc18cd)
+                active_hexes.attr('fill', '#eee');
+                active_hexes = d3.selectAll(`.${d.nawc18cd}`);
+                active_hexes.attr('fill', 'red')
+                d3.select("#info")
+                        .classed("active", true);
+                if(d.nawc18nm) {
+                    d3.select('#con_name').text(d.nawc18nm);   
+                } else if(d.nawer18nm) {
+                    d3.select('#con_name').text(d.nawer18nm);
+                }
+        }
+
+        let maps = ['maps/nawc_2018_1.hexjson','maps/nawc_2018_2.hexjson','maps/nawc_2018_3.hexjson'];
+        maps.forEach((m, i) => {
+            let svg = d3.select(`#map${i+1}`).append('svg').attr("width",width).attr('height', height);
+
+            d3.json(m).then((data) => {
+                let hexes = d3.renderHexJSON(data, width-margin.left-margin.right, height-margin.top-margin.bottom);
+                let hexmap = svg.selectAll('g')
+                    .data(hexes)
+                    .join((enter) => {
+                        let g = enter.append('g')
+                            .attr('transform', (hex) => {
+                                return `translate(${hex.x+margin.left},${hex.y+margin.top})`;
+                            }).append('polygon')
+                            .attr('points', (hex) => hex.points)
+                            .attr('stroke', 'black')
+                            .attr('fill', '#eee')
+                            .attr('stroke-width', 2)
+                            .attr('class', (hex) => hex.key)
+                            .attr('data-name', (hex) => hex.name)
+                            .on('click', clicked);
+
+                    });
+                });
+        });
+    </script>
+    
+</body>
+</html>
